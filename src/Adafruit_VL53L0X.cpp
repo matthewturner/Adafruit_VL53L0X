@@ -74,11 +74,13 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
       VL53L0X_IMPLEMENTATION_VER_MINOR != VERSION_REQUIRED_MINOR ||
       VL53L0X_IMPLEMENTATION_VER_SUB != VERSION_REQUIRED_BUILD) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F(
           "Found " STR(VL53L0X_IMPLEMENTATION_VER_MAJOR) "." STR(VL53L0X_IMPLEMENTATION_VER_MINOR) "." STR(
               VL53L0X_IMPLEMENTATION_VER_SUB) " rev " STR(VL53L0X_IMPLEMENTATION_VER_REVISION)));
       Serial.println(F("Requires " STR(VERSION_REQUIRED_MAJOR) "." STR(
           VERSION_REQUIRED_MINOR) "." STR(VERSION_REQUIRED_BUILD)));
+      #endif
     }
 
     Status = VL53L0X_ERROR_NOT_SUPPORTED;
@@ -96,6 +98,7 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("VL53L0X Info:"));
       Serial.print(F("Device Name: "));
       Serial.print(DeviceInfo.Name);
@@ -108,15 +111,18 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
       Serial.print(DeviceInfo.ProductRevisionMajor);
       Serial.print(F(", Minor: "));
       Serial.println(DeviceInfo.ProductRevisionMinor);
+      #endif
     }
 
     if ((DeviceInfo.ProductRevisionMajor != 1) ||
         (DeviceInfo.ProductRevisionMinor != 1)) {
       if (debug) {
+        #ifndef DISABLE_DEBUG_OUTPUT
         Serial.print(F("Error expected cut 1.1 but found "));
         Serial.print(DeviceInfo.ProductRevisionMajor);
         Serial.print(',');
         Serial.println(DeviceInfo.ProductRevisionMinor);
+        #endif
       }
 
       Status = VL53L0X_ERROR_NOT_SUPPORTED;
@@ -125,7 +131,9 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("VL53L0X: StaticInit"));
+      #endif
     }
 
     Status = VL53L0X_StaticInit(pMyDevice); // Device Initialization
@@ -133,23 +141,29 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("VL53L0X: PerformRefSpadManagement"));
+      #endif
     }
 
     Status = VL53L0X_PerformRefSpadManagement(
         pMyDevice, &refSpadCount, &isApertureSpads); // Device Initialization
 
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.print(F("refSpadCount = "));
       Serial.print(refSpadCount);
       Serial.print(F(", isApertureSpads = "));
       Serial.println(isApertureSpads);
+      #endif
     }
   }
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("VL53L0X: PerformRefCalibration"));
+      #endif
     }
 
     Status = VL53L0X_PerformRefCalibration(pMyDevice, &VhvSettings,
@@ -159,7 +173,9 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
   if (Status == VL53L0X_ERROR_NONE) {
     // no need to do this when we use VL53L0X_PerformSingleRangingMeasurement
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("VL53L0X: SetDeviceMode"));
+      #endif
     }
 
     Status = VL53L0X_SetDeviceMode(
@@ -176,8 +192,10 @@ boolean Adafruit_VL53L0X::begin(uint8_t i2c_addr, boolean debug, TwoWire *i2c,
     return true;
   } else {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.print(F("VL53L0X Error: "));
       Serial.println(Status);
+      #endif
     }
 
     return false;
@@ -253,7 +271,9 @@ boolean Adafruit_VL53L0X::configSensor(VL53L0X_Sense_config_t vl_config) {
     }
     break;
   case VL53L0X_SENSE_LONG_RANGE:
-    Serial.println("  VL53L0X_SENSE_LONG_RANGE");
+    #ifndef DISABLE_DEBUG_OUTPUT
+    Serial.println(F("  VL53L0X_SENSE_LONG_RANGE"));
+    #endif
     Status = VL53L0X_SetLimitCheckValue(
         pMyDevice, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
         (FixPoint1616_t)(0.1 * 65536));
@@ -336,7 +356,9 @@ VL53L0X_Error Adafruit_VL53L0X::getSingleRangingMeasurement(
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: PerformSingleRangingMeasurement"));
+      #endif
     }
     Status = VL53L0X_PerformSingleRangingMeasurement(pMyDevice,
                                                      RangingMeasurementData);
@@ -346,6 +368,7 @@ VL53L0X_Error Adafruit_VL53L0X::getSingleRangingMeasurement(
     }
 
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       VL53L0X_GetLimitCheckCurrent(pMyDevice,
                                    VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD,
                                    &LimitCheckCurrent);
@@ -355,6 +378,7 @@ VL53L0X_Error Adafruit_VL53L0X::getSingleRangingMeasurement(
 
       Serial.print(F("Measured distance: "));
       Serial.println(RangingMeasurementData->RangeMilliMeter);
+      #endif
     }
   }
 
@@ -373,7 +397,9 @@ VL53L0X_Error Adafruit_VL53L0X::startMeasurement(boolean debug) {
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: StartMeasurement"));
+      #endif
     }
     Status = VL53L0X_StartMeasurement(pMyDevice);
   }
@@ -393,7 +419,9 @@ VL53L0X_Error Adafruit_VL53L0X::stopMeasurement(boolean debug) {
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: StopMeasurement"));
+      #endif  
     }
     Status = VL53L0X_StopMeasurement(pMyDevice);
   }
@@ -419,7 +447,9 @@ VL53L0X_Error Adafruit_VL53L0X::getLimitCheckCurrent(
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: getLimitCheckCurrent"));
+      #endif
     }
     Status = VL53L0X_GetLimitCheckCurrent(pMyDevice, intLimitCheckId,
                                           pLimitCheckCurrent);
@@ -450,7 +480,9 @@ VL53L0X_Error Adafruit_VL53L0X::setDeviceMode(VL53L0X_DeviceModes DeviceMode,
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: setDeviceMode"));
+      #endif
     }
     Status = VL53L0X_SetDeviceMode(pMyDevice, DeviceMode);
   }
@@ -473,7 +505,9 @@ VL53L0X_Error Adafruit_VL53L0X::setInterruptThresholds(
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: setInterruptThresholds"));
+      #endif
     }
     // ST API Comments "no dependency on DeviceMode for Ewok " so device mode
     // not used but API requires something so pass in
@@ -503,7 +537,9 @@ Adafruit_VL53L0X::getInterruptThresholds(FixPoint1616_t *pThresholdLow,
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: getInterruptThresholds"));
+      #endif
     }
     // ST API Comments "no dependency on DeviceMode for Ewok " so device mode
     // not used but API requires something so pass in
@@ -530,7 +566,9 @@ VL53L0X_Error Adafruit_VL53L0X::getDeviceMode(VL53L0X_DeviceModes *pDeviceMode,
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: getDeviceMode"));
+      #endif
     }
     Status = VL53L0X_GetDeviceMode(pMyDevice, pDeviceMode);
   }
@@ -550,7 +588,9 @@ VL53L0X_Error Adafruit_VL53L0X::clearInterruptMask(boolean debug) {
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: clearInterruptMask"));
+      #endif
     }
     Status = VL53L0X_ClearInterruptMask(pMyDevice, 0);
   }
@@ -575,7 +615,9 @@ VL53L0X_Error Adafruit_VL53L0X::setGpioConfig(
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: setGpioConfig"));
+      #endif
     }
     //  Pin is always 0, Devicemode is ignored if not
     //  VL53L0X_DEVICEMODE_GPIO_DRIVE or VL53L0X_DEVICEMODE_GPIO_OSC
@@ -603,7 +645,9 @@ VL53L0X_Error Adafruit_VL53L0X::getGpioConfig(
   VL53L0X_Error Status = VL53L0X_ERROR_NONE;
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: getGpioConfig"));
+      #endif
     }
     //  Pin is always 0, Devicemode is ignored if not
     //  VL53L0X_DEVICEMODE_GPIO_DRIVE or VL53L0X_DEVICEMODE_GPIO_OSC
@@ -632,7 +676,9 @@ VL53L0X_Error Adafruit_VL53L0X::getRangingMeasurement(
 
   if (Status == VL53L0X_ERROR_NONE) {
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       Serial.println(F("sVL53L0X: getRangingMeasurement"));
+      #endif
     }
     Status =
         VL53L0X_GetRangingMeasurementData(pMyDevice, RangingMeasurementData);
@@ -642,6 +688,7 @@ VL53L0X_Error Adafruit_VL53L0X::getRangingMeasurement(
     }
 
     if (debug) {
+      #ifndef DISABLE_DEBUG_OUTPUT
       VL53L0X_GetLimitCheckCurrent(pMyDevice,
                                    VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD,
                                    &LimitCheckCurrent);
@@ -651,6 +698,7 @@ VL53L0X_Error Adafruit_VL53L0X::getRangingMeasurement(
 
       Serial.print(F("Measured distance: "));
       Serial.println(RangingMeasurementData->RangeMilliMeter);
+      #endif
     }
   }
 
